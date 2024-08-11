@@ -1,5 +1,6 @@
 ﻿#if IL2CPP
 using Il2CppSystem.Collections.Generic;
+
 #else
 using System.Collections.Generic;
 #endif
@@ -7,7 +8,7 @@ using UnityEngine;
 
 namespace KingdomMod
 {
-    public class GameExtensions
+    public static class GameExtensions
     {
         public static T GetPayableOfType<T>() where T : Component
         {
@@ -49,6 +50,30 @@ namespace KingdomMod
                 var comp = obj.GetComponent<T>();
                 if (comp != null)
                     result.Add(comp);
+            }
+
+            return result;
+        }
+
+        public static List<Payable> GetPayablesWithName(string name, bool contains = false) {
+            var result = new List<Payable>();
+            var payables = Managers.Inst.payables;
+            if(!payables)
+                return result;
+
+            foreach(var obj in payables.
+#if IL2CPP
+                         AllPayables
+#else
+                         GetFieldOrPropertyValue<Payable[]>("AllPayables")
+#endif
+                    ) {
+                if(obj == null)
+                    continue;
+                if(!contains && obj.name == name)
+                    result.Add(obj);
+                else if(contains && obj.name.Contains(name))
+                    result.Add(obj);
             }
 
             return result;
@@ -99,22 +124,22 @@ namespace KingdomMod
             return list;
         }
 
-        public static int GetArcherCount(ArcherType archerType)
+        public static int GetArcherCount(ArcherTypeEnum archerType)
         {
             var result = 0;
             foreach (var obj in Managers.Inst.kingdom.GetFieldOrPropertyValue<HashSet<Archer>>("_archers"))
             {
-                if (archerType == ArcherType.Free)
+                if (archerType == ArcherTypeEnum.Free)
                 {
                     if (!obj.inGuardSlot && !obj.isKnightSoldier)
                         result++;
                 }
-                else if (archerType == ArcherType.GuardSlot)
+                else if (archerType == ArcherTypeEnum.GuardSlot)
                 {
                     if (obj.inGuardSlot)
                         result++;
                 }
-                else if (archerType == ArcherType.KnightSoldier)
+                else if (archerType == ArcherTypeEnum.KnightSoldier)
                 {
                     if (obj.isKnightSoldier)
                         result++;
@@ -135,11 +160,8 @@ namespace KingdomMod
             return knightCount;
         }
 
-        public enum ArcherType
-        {
-            Free,
-            GuardSlot,
-            KnightSoldier
+        public static Player GetLocalPlayer() {
+            return Managers.Inst.kingdom.GetPlayer(NetworkBigBoss.HasWorldAuth ? 0 : 1);
         }
     }
 }

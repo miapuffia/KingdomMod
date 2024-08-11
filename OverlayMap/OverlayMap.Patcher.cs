@@ -19,7 +19,7 @@ namespace KingdomMod
                 }
                 catch (Exception ex)
                 {
-                    log.LogError($"[Patcher] => {ex}");
+                    LogUtil.Error($"[Patcher] => {ex}");
                 }
             }
 
@@ -28,7 +28,7 @@ namespace KingdomMod
             {
                 public static void Postfix()
                 {
-                    log.LogMessage("NetworkBigBoss.Client_OnCaughtUp.");
+                    LogUtil.Message("NetworkBigBoss.Client_OnCaughtUp.");
                     _overlayMap.OnGameStart();
                 }
             }

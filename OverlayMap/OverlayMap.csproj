@@ -19,26 +19,32 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <DefineConstants>IL2CPP,BIE,BIE6</DefineConstants>
     <WarningsAsErrors>$(WarningsAsErrors);NU1605</WarningsAsErrors>
-    <BepInExPluginsDir>D:\SteamLibrary\steamapps\common\Kingdom Two Crowns\BepInEx\plugins\</BepInExPluginsDir>
+    <BepInExPluginsDir>G:\SteamLibrary\steamapps\common\Kingdom Two Crowns\BepInEx\plugins\</BepInExPluginsDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='BIE6_IL2CPP|AnyCPU'">
     <DefineConstants>IL2CPP,BIE,BIE6</DefineConstants>
     <WarningsAsErrors>$(WarningsAsErrors);NU1605</WarningsAsErrors>
-    <BepInExPluginsDir>D:\SteamLibrary\steamapps\common\Kingdom Two Crowns\BepInEx\plugins\</BepInExPluginsDir>
+    <BepInExPluginsDir>G:\SteamLibrary\steamapps\common\Kingdom Two Crowns\BepInEx\plugins\</BepInExPluginsDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='BIE6_Mono|AnyCPU'">
     <TargetFramework>net472</TargetFramework>
     <DefineConstants>MONO,BIE,BIE6</DefineConstants>
     <WarningsAsErrors>$(WarningsAsErrors);NU1605</WarningsAsErrors>
-    <BepInExPluginsDir>D:\Game\Kingdom Two Crowns v1.1.18\BepInEx\plugins\</BepInExPluginsDir>
+    <BepInExPluginsDir>G:\Game\Kingdom Two Crowns v1.1.18\BepInEx\plugins\</BepInExPluginsDir>
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="images\archerTower.png" />
+    <None Remove="images\castle.png" />
+    <None Remove="images\wall.png" />
+    <None Remove="images\wall1.png" />
+    <None Remove="images\wallUnbuilt.png" />
     <None Remove="prefabs\KingdomMod.OverlayMap.Language_en-US.cfg" />
     <None Remove="prefabs\KingdomMod.OverlayMap.Language_zh-CN.cfg" />
     <None Remove="prefabs\KingdomMod.OverlayMap.Style.cfg" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="images\*.png" />
     <EmbeddedResource Include="prefabs\KingdomMod.OverlayMap.Language_en-US.cfg" />
     <EmbeddedResource Include="prefabs\KingdomMod.OverlayMap.Language_zh-CN.cfg" />
     <EmbeddedResource Include="prefabs\KingdomMod.OverlayMap.Style.cfg" />
@@ -88,6 +94,10 @@
     </Reference>
     <Reference Include="UnityEngine.CoreModule">
       <HintPath>..\_libs\BIE6_IL2CPP\interop\UnityEngine.CoreModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.ImageConversionModule">
+      <HintPath>..\_libs\BIE6_IL2CPP\interop\UnityEngine.ImageConversionModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.IMGUIModule">
@@ -156,6 +166,10 @@
     </Reference>
     <Reference Include="UnityEngine.CoreModule">
       <HintPath>..\_libs\BIE6_Mono\Managed\UnityEngine.CoreModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.ImageConversionModule">
+      <HintPath>..\_libs\BIE6_Mono\Managed\UnityEngine.ImageConversionModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.IMGUIModule">
