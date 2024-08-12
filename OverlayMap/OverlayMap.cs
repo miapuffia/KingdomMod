@@ -47,6 +47,12 @@ namespace KingdomMod
         private float minimapHeight = 0;
         private float extraInfoHeight = 0;
 
+        private static System.Collections.Generic.Dictionary<Hermit.HermitType, string> hermitNames;
+        private static System.Collections.Generic.Dictionary<TechnologyAge, int> lighthouseLevels;
+        private static System.Collections.Generic.Dictionary<Steed.SteedType, string> steedNames;
+        private static System.Collections.Generic.Dictionary<Statue.Deity, string> statueNames;
+        private static System.Collections.Generic.Dictionary<Player.Model, string> playerModelNames;
+
         public OverlayMap()
         {
             try
@@ -60,6 +66,8 @@ namespace KingdomMod
                 LogUtil.Info(exception);
                 throw;
             }
+
+            SetupDictionaries();
         }
 
         public static void Initialize(OverlayMapPlugin plugin)
@@ -182,6 +190,78 @@ namespace KingdomMod
             }
         }
 
+        private static void SetupDictionaries()
+        {
+            hermitNames = new System.Collections.Generic.Dictionary<Hermit.HermitType, string> {
+                { Hermit.HermitType.Baker,      ConfigStrings.HermitBaker },
+                { Hermit.HermitType.Ballista,   ConfigStrings.HermitBallista },
+                { Hermit.HermitType.Horn,       ConfigStrings.HermitHorn },
+                { Hermit.HermitType.Horse,      ConfigStrings.HermitHorse },
+                { Hermit.HermitType.Knight,     ConfigStrings.HermitKnight },
+            };
+
+            lighthouseLevels = new System.Collections.Generic.Dictionary<TechnologyAge, int> {
+                { TechnologyAge.None,   0 },
+                { TechnologyAge.Wood,   1 },
+                { TechnologyAge.Stone,  2 },
+                { TechnologyAge.Iron,   3 },
+            };
+
+            steedNames = new System.Collections.Generic.Dictionary<Steed.SteedType, string> {
+                { Steed.SteedType.Bear,                  ConfigStrings.Bear },
+                { Steed.SteedType.P1Griffin,             ConfigStrings.Griffin },
+                { Steed.SteedType.Lizard,                ConfigStrings.Lizard },
+                { Steed.SteedType.Reindeer,              ConfigStrings.Reindeer },
+                { Steed.SteedType.Spookyhorse,           ConfigStrings.Spookyhorse },
+                { Steed.SteedType.Stag,                  ConfigStrings.Stag },
+                { Steed.SteedType.Unicorn,               ConfigStrings.Unicorn },
+                { Steed.SteedType.P1Warhorse,            ConfigStrings.Warhorse },
+                { Steed.SteedType.P1Default,             ConfigStrings.DefaultSteed },
+                { Steed.SteedType.P2Default,             ConfigStrings.DefaultSteed },
+                { Steed.SteedType.HorseStamina,          ConfigStrings.HorseStamina },
+                { Steed.SteedType.HorseBurst,            ConfigStrings.HorseBurst },
+                { Steed.SteedType.HorseFast,             ConfigStrings.HorseFast },
+                { Steed.SteedType.P1Wolf,                ConfigStrings.Wolf },
+                { Steed.SteedType.Trap,                  ConfigStrings.Trap },
+                { Steed.SteedType.Barrier,               ConfigStrings.Barrier },
+                { Steed.SteedType.Bloodstained,          ConfigStrings.Bloodstained },
+                { Steed.SteedType.P2Wolf,                ConfigStrings.Wolf },
+                { Steed.SteedType.P2Griffin,             ConfigStrings.Griffin },
+                { Steed.SteedType.P2Warhorse,            ConfigStrings.Warhorse },
+                { Steed.SteedType.P2Stag,                ConfigStrings.Stag },
+                { Steed.SteedType.Gullinbursti,          ConfigStrings.Gullinbursti },
+                { Steed.SteedType.Sleipnir,              ConfigStrings.Sleipnir },
+                { Steed.SteedType.Reindeer_Norselands,   ConfigStrings.Reindeer },
+                { Steed.SteedType.CatCart,               ConfigStrings.CatCart },
+                { Steed.SteedType.Kelpie,                ConfigStrings.Kelpie },
+                { Steed.SteedType.DayNight,              ConfigStrings.DayNight },
+                { Steed.SteedType.P2Kelpie,              ConfigStrings.Kelpie },
+                { Steed.SteedType.P2Reindeer_Norselands, ConfigStrings.Reindeer },
+            };
+
+            statueNames = new System.Collections.Generic.Dictionary<Statue.Deity, string> {
+                { Statue.Deity.Archer,  ConfigStrings.StatueArcher },
+                { Statue.Deity.Worker,  ConfigStrings.StatueWorker },
+                { Statue.Deity.Knight,  ConfigStrings.StatueKnight },
+                { Statue.Deity.Farmer,  ConfigStrings.StatueFarmer },
+                { Statue.Deity.Time,    ConfigStrings.StatueTime },
+            };
+
+            playerModelNames = new System.Collections.Generic.Dictionary<Player.Model, string> {
+                { Player.Model.None,        "" },
+                { Player.Model.King,        ConfigStrings.King },
+                { Player.Model.Queen,       ConfigStrings.Queen },
+                { Player.Model.Prince,      ConfigStrings.Prince },
+                { Player.Model.Princess,    ConfigStrings.Princess },
+                { Player.Model.Hooded,      ConfigStrings.Hooded },
+                { Player.Model.Zangetsu,    ConfigStrings.Zangetsu },
+                { Player.Model.Alfred,      ConfigStrings.Alfred },
+                { Player.Model.Gebel,       ConfigStrings.Gebel },
+                { Player.Model.Miriam,      ConfigStrings.Miriam },
+                { Player.Model.Total,       "" },
+            };
+        }
+
         private static bool IsPlaying()
         {
             var game = Managers.Inst?.game;
@@ -219,9 +299,9 @@ namespace KingdomMod
             }
 
             GUI.BeginGroup(new Rect(0, groupY, Screen.width, groupHeight));
-            DrawMinimap(playerId);
+            DrawMinimap();
             DrawExtraInfo(playerId);
-            DrawStatsInfo(playerId);
+            DrawStatsInfo();
             GUI.EndGroup();
         }
 
@@ -272,14 +352,6 @@ namespace KingdomMod
             var poiList = new System.Collections.Generic.List<MarkInfo>();
             var leftWalls = new System.Collections.Generic.List<WallPoint>();
             var rightWalls = new System.Collections.Generic.List<WallPoint>();
-
-            var hermitNames = new System.Collections.Generic.Dictionary<Hermit.HermitType, string> {
-                { Hermit.HermitType.Baker,      ConfigStrings.HermitBaker },
-                { Hermit.HermitType.Ballista,   ConfigStrings.HermitBallista },
-                { Hermit.HermitType.Horn,       ConfigStrings.HermitHorn },
-                { Hermit.HermitType.Horse,      ConfigStrings.HermitHorse },
-                { Hermit.HermitType.Knight,     ConfigStrings.HermitKnight },
-            };
 
             //Players
             foreach(var player in new System.Collections.Generic.List<Player> { kingdom.playerOne, kingdom.playerTwo }) {
@@ -371,33 +443,106 @@ namespace KingdomMod
                 poiList.Add(new MarkInfo(shopForge.transform.position.x, StyleConfigs.ShopForge.Color, StyleConfigs.ShopForge.Sign, "", image: LoadTextures.ShopSwordTexture));
             }
 
-            //Teleporters
-            System.Collections.Generic.List<Texture2D> availablePortalTextures = [
-                LoadTextures.Portal_GTexture,
-                LoadTextures.Portal_PTexture,
-                LoadTextures.Portal_OTexture,
-                LoadTextures.Portal_MTexture,
-                LoadTextures.Portal_YTexture,
-                LoadTextures.Portal_BTexture,
-            ];
+            //Active walls
+            foreach (var obj in kingdom.GetFieldOrPropertyValue<HashSet<Wall>>("_walls"))
+            {
+                poiList.Add(new MarkInfo(obj.transform.position.x, StyleConfigs.Wall.Color, StyleConfigs.Wall.Sign, "", textLines: [obj.level + ""], image: LoadTextures.WallTexture));
+                if (kingdom.GetBorderSideForPosition(obj.transform.position.x) == Side.Left)
+                    leftWalls.Add(new WallPoint(obj.transform.position, StyleConfigs.WallLine.Color));
+                else
+                    rightWalls.Add(new WallPoint(obj.transform.position, StyleConfigs.WallLine.Color));
+            }
 
-            System.Collections.Generic.Dictionary<int, Texture2D> assignedPortalTextures = [];
+            //Building walls
+            foreach (var blocker in payables.GetFieldOrPropertyValue<List<PayableBlocker>>("_allBlockers"))
+            {
+                if (blocker == null) continue;
+                var scaffolding = blocker.GetComponent<Scaffolding>();
+                if (scaffolding == null) continue;
+                var go = scaffolding.building;
+                if (go == null) continue;
 
-            foreach(var obj in GameExtensions.GetPayablesOfType<PayableTeleporter>()) {
-                if(assignedPortalTextures.ContainsKey(obj.linkedTo.GetHashCode())) {
-                    poiList.Add(new MarkInfo(obj.transform.position.x, StyleConfigs.ShopForge.Color, StyleConfigs.ShopForge.Sign, "", image: assignedPortalTextures[obj.linkedTo.GetHashCode()], rowNum: 1));
-                    continue;
+                var wall = go.GetComponent<Wall>();
+                if (wall)
+                {
+                    poiList.Add(new MarkInfo(go.transform.position.x, StyleConfigs.Wall.Building.Color, StyleConfigs.Wall.Sign, ""));
+                    if (kingdom.GetBorderSideForPosition(go.transform.position.x) == Side.Left)
+                        leftWalls.Add(new WallPoint(go.transform.position, StyleConfigs.WallLine.Building.Color));
+                    else
+                        rightWalls.Add(new WallPoint(go.transform.position, StyleConfigs.WallLine.Building.Color));
+                }
+            }
+
+            //Broken walls
+            foreach (var obj in GameObject.FindGameObjectsWithTag(Tags.WallWreck))
+            {
+                poiList.Add(new MarkInfo(obj.transform.position.x, StyleConfigs.Wall.Wrecked.Color, StyleConfigs.Wall.Sign, "", image: LoadTextures.WallUnbuiltTexture));
+                if (kingdom.GetBorderSideForPosition(obj.transform.position.x) == Side.Left)
+                    leftWalls.Add(new WallPoint(obj.transform.position, StyleConfigs.WallLine.Wrecked.Color));
+                else
+                    rightWalls.Add(new WallPoint(obj.transform.position, StyleConfigs.WallLine.Wrecked.Color));
+            }
+
+            //Unbuilt walls
+            foreach (var obj in GameObject.FindGameObjectsWithTag(Tags.WallFoundation))
+            {
+                poiList.Add(new MarkInfo(obj.transform.position.x, StyleConfigs.WallFoundation.Color, StyleConfigs.WallFoundation.Sign, "", image: LoadTextures.WallUnbuiltTexture));
+            }
+
+            //Archer towers
+            foreach (var obj in GameExtensions.FindObjectsWithTagOfType<Tower>(Tags.Tower))
+            {
+                if (obj.level > 0)
+                {
+                    poiList.Add(new MarkInfo(obj.transform.position.x, StyleConfigs.Deer.Color, StyleConfigs.Deer.Sign, "", textLines: [obj.level + ""], image: LoadTextures.ArcherTowerTexture));
+                }
+                else
+                {
+                    poiList.Add(new MarkInfo(obj.transform.position.x, StyleConfigs.Deer.Color, StyleConfigs.Deer.Sign, "", image: LoadTextures.ArcherTowerUnbuiltTexture));
+                }
+            }
+
+            //Farm houses
+            var farmHouses = kingdom.GetFarmHouses();
+            foreach (var obj in farmHouses)
+            {
+                if (obj.isStable)
+                {
+                    string[] stableSteedNames = new string[obj.stabledSteeds.Count];
+
+                    for (int i = 0; i < obj.stabledSteeds.Count; i++)
+                    {
+                        stableSteedNames[i] = steedNames[obj.stabledSteeds[i].steedType];
+                    }
+
+                    stableSteedNames = [.. stableSteedNames.OrderBy(s => s.Length)];
+
+                    poiList.Add(new MarkInfo(obj.transform.position.x, StyleConfigs.Farmhouse.Color, StyleConfigs.Farmhouse.Sign, "", textLines: stableSteedNames, image: LoadTextures.StableTexture));
+                }
+                else
+                {
+                    poiList.Add(new MarkInfo(obj.transform.position.x, StyleConfigs.Farmhouse.Color, StyleConfigs.Farmhouse.Sign, "", textLines: [obj.level + ""], image: LoadTextures.FarmHouseTexture));
+                }
+            }
+
+            //Rivers (unbuilt farm houses)
+            foreach (var river in gameLayer.GetComponentsInChildren<River>())
+            {
+                bool isFarmHouse = false;
+
+                foreach (var farmHouse in farmHouses)
+                {
+                    if (Math.Abs(farmHouse.transform.position.x - river.transform.position.x) <= 1)
+                    {
+                        isFarmHouse = true;
+                        break;
+                    }
                 }
 
-                if(availablePortalTextures.Count == 0) {
-                    poiList.Add(new MarkInfo(obj.transform.position.x, StyleConfigs.ShopForge.Color, StyleConfigs.ShopForge.Sign, "", image: LoadTextures.PortalTexture, rowNum: 1));
+                if (isFarmHouse)
                     continue;
-                }
 
-                assignedPortalTextures.Add(obj.GetHashCode(), availablePortalTextures[0]);
-                availablePortalTextures.RemoveAt(0);
-
-                poiList.Add(new MarkInfo(obj.transform.position.x, StyleConfigs.ShopForge.Color, StyleConfigs.ShopForge.Sign, "", image: assignedPortalTextures[obj.GetHashCode()], rowNum: 1));
+                poiList.Add(new MarkInfo(river.transform.position.x, StyleConfigs.River.Color, StyleConfigs.River.Sign, "", image: LoadTextures.RiverTexture));
             }
 
             //Active beggar camps
@@ -437,6 +582,25 @@ namespace KingdomMod
                     poiList.Add(new MarkInfo(deer.transform.position.x, deer.GetFieldOrPropertyValue<StateMachine>("_fsm").current == 5 ? StyleConfigs.DeerFollowing.Color : StyleConfigs.Deer.Color, StyleConfigs.Deer.Sign, "", image: LoadTextures.DeerTexture, rowNum: 1, flipImage: deer.transform.localScale.x > 0));
             }
 
+            //Chests
+            foreach (var obj in gameLayer.GetComponentsInChildren<Chest>())
+            {
+                if (obj.coins == 0) continue;
+
+                if (obj.isGems)
+                    poiList.Add(new MarkInfo(obj.transform.position.x, StyleConfigs.GemChest.Color, StyleConfigs.GemChest.Sign, "", textLines: [obj.coins + ""], image: LoadTextures.ChestGemTexture, rowNum: 1));
+                else
+                    poiList.Add(new MarkInfo(obj.transform.position.x, StyleConfigs.Chest.Color, StyleConfigs.Chest.Sign, "", textLines: [obj.coins + ""], image: LoadTextures.ChestTexture, rowNum: 1));
+            }
+
+            //Payable gem chest next to boat
+            var payableGemChest = GameExtensions.GetPayableOfType<PayableGemChest>();
+            if (payableGemChest != null)
+            {
+                var gemsCount = payableGemChest.infiniteGems ? payableGemChest.GetFieldOrPropertyValue<PayableGemGuard>("guardRef").price : payableGemChest.gemsStored;
+                poiList.Add(new MarkInfo(payableGemChest.transform.position.x, StyleConfigs.GemMerchant.Color, StyleConfigs.GemMerchant.Sign, "", textLines: [gemsCount + ""], image: LoadTextures.ChestGemPayableTexture, rowNum: 1));
+            }
+
             //Enemy portals
             Portal dock = null;
             foreach (var obj in kingdom.AllPortals)
@@ -459,244 +623,9 @@ namespace KingdomMod
             }
 
             //Lighthouse
-            var lighthouseLevel = new System.Collections.Generic.Dictionary<TechnologyAge, int> {
-                { TechnologyAge.None,   0 },
-                { TechnologyAge.Wood,   1 },
-                { TechnologyAge.Stone,  2 },
-                { TechnologyAge.Iron,   3 },
-            };
-
             var lighthouse = kingdom.lighthouse;
             if(lighthouse != null) {
-                poiList.Add(new MarkInfo(lighthouse.transform.position.x, StyleConfigs.ShopForge.Color, StyleConfigs.ShopForge.Sign, "", textLines: [lighthouseLevel[lighthouse.techAge] + "" ], image: LoadTextures.LighthouseTexture));
-            }
-
-            //Enemies and bosses
-            var enemies = Managers.Inst.enemies.GetFieldOrPropertyValue<HashSet<Enemy>>("_enemies");
-            if (enemies != null && enemies.Count > 0)
-            {
-                var leftEnemies = new System.Collections.Generic.List<float>();
-                var leftBosses = new System.Collections.Generic.List<float>();
-                var leftBossesWithCrownStealers = new System.Collections.Generic.List<float>();
-                var leftSquids = new System.Collections.Generic.List<float>();
-                var leftCrownStealers = new System.Collections.Generic.List<float>();
-
-                var rightEnemies = new System.Collections.Generic.List<float>();
-                var rightBosses = new System.Collections.Generic.List<float>();
-                var rightBossesWithCrownStealers = new System.Collections.Generic.List<float>();
-                var rightSquids = new System.Collections.Generic.List<float>();
-                var rightCrownStealers = new System.Collections.Generic.List<float>();
-
-                foreach (var enemy in enemies)
-                {
-                    if (enemy == null) continue;
-                    var damageable = enemy.GetComponent<Damageable>();
-                    if (damageable != null && damageable.isDead)
-                        continue;
-
-                    var bossComponent = enemy.GetComponent<Boss>();
-
-                    var enemyX = enemy.transform.position.x;
-                    if (kingdom.GetBorderSideForPosition(enemyX) == Side.Left) {
-                        if(enemy.GetComponent<Squid>() != null)
-                            leftSquids.Add(enemyX);
-                        else if (bossComponent != null && bossComponent.crownStealerPrefab != null)
-                            leftBossesWithCrownStealers.Add(enemyX);
-                        else if(enemy.GetComponent<CrownStealer>() != null)
-                            leftCrownStealers.Add(enemyX);
-                        else if(bossComponent != null)
-                            leftBosses.Add(enemyX);
-                        else
-                            leftEnemies.Add(enemyX);
-                    } else {
-                        if(enemy.GetComponent<Squid>() != null)
-                            rightSquids.Add(enemyX);
-                        else if(bossComponent != null && bossComponent.crownStealerPrefab != null)
-                            rightBossesWithCrownStealers.Add(enemyX);
-                        else if(enemy.GetComponent<CrownStealer>() != null)
-                            rightCrownStealers.Add(enemyX);
-                        else if(bossComponent != null)
-                            rightBosses.Add(enemyX);
-                        else
-                            rightEnemies.Add(enemyX);
-                    }
-                }
-
-                leftEnemies.Sort();
-                leftEnemies.Reverse();
-                leftBosses.Sort();
-                leftBosses.Reverse();
-                leftBossesWithCrownStealers.Sort();
-                leftBossesWithCrownStealers.Reverse();
-                leftSquids.Sort();
-                leftSquids.Reverse();
-                leftCrownStealers.Sort();
-                leftCrownStealers.Reverse();
-
-                rightEnemies.Sort();
-                rightBosses.Sort();
-                rightBossesWithCrownStealers.Sort();
-                rightSquids.Sort();
-                rightCrownStealers.Sort();
-
-                if(leftEnemies.Count > 0) {
-                    poiList.Add(new MarkInfo(leftEnemies[0], StyleConfigs.Enemy.Color, StyleConfigs.Enemy.Sign, ConfigStrings.Enemy, textLines: [ leftEnemies.Count + "" ], image: LoadTextures.EnemyTexture, rowNum: 1));
-                }
-
-                if(leftBosses.Count > 0) {
-                    poiList.Add(new MarkInfo(leftBosses[0], StyleConfigs.Boss.Color, StyleConfigs.Boss.Sign, ConfigStrings.Boss, textLines: [ leftBosses.Count + "" ], image: LoadTextures.EnemyBossTexture, rowNum: 1));
-                }
-
-                if(leftBossesWithCrownStealers.Count > 0) {
-                    poiList.Add(new MarkInfo(leftBossesWithCrownStealers[0], StyleConfigs.Boss.Color, StyleConfigs.Boss.Sign, ConfigStrings.Boss, textLines: [ leftBossesWithCrownStealers.Count + "" ], image: LoadTextures.EnemyBossWithCrownStealerTexture, rowNum: 1));
-                }
-
-                if(leftSquids.Count > 0) {
-                    poiList.Add(new MarkInfo(leftSquids[0], StyleConfigs.Boss.Color, StyleConfigs.Boss.Sign, ConfigStrings.Boss, textLines: [ leftSquids.Count + "" ], image: LoadTextures.EnemySquidTexture, rowNum: 1));
-                }
-
-                if(leftCrownStealers.Count > 0) {
-                    poiList.Add(new MarkInfo(leftCrownStealers[0], StyleConfigs.Boss.Color, StyleConfigs.Boss.Sign, ConfigStrings.Boss, textLines: [ leftCrownStealers.Count + "" ], image: LoadTextures.EnemyCrownStealerTexture, rowNum: 1));
-                }
-
-                if(rightEnemies.Count > 0) {
-                    poiList.Add(new MarkInfo(rightEnemies[0], StyleConfigs.Enemy.Color, StyleConfigs.Enemy.Sign, ConfigStrings.Enemy, textLines: [ rightEnemies.Count + "" ], image: LoadTextures.EnemyTexture, rowNum: 1, flipImage: true));
-                }
-
-                if(rightBosses.Count > 0) {
-                    poiList.Add(new MarkInfo(rightBosses[0], StyleConfigs.Boss.Color, StyleConfigs.Boss.Sign, ConfigStrings.Boss, textLines: [ rightBosses.Count + "" ], image: LoadTextures.EnemyBossTexture, rowNum: 1));
-                }
-
-                if(rightBossesWithCrownStealers.Count > 0) {
-                    poiList.Add(new MarkInfo(rightBossesWithCrownStealers[0], StyleConfigs.Boss.Color, StyleConfigs.Boss.Sign, ConfigStrings.Boss, textLines: [rightBossesWithCrownStealers.Count + "" ], image: LoadTextures.EnemyBossWithCrownStealerTexture, rowNum: 1));
-                }
-
-                if(rightSquids.Count > 0) {
-                    poiList.Add(new MarkInfo(rightSquids[0], StyleConfigs.Boss.Color, StyleConfigs.Boss.Sign, ConfigStrings.Boss, textLines: [ rightSquids.Count + "" ], image: LoadTextures.EnemySquidTexture, rowNum: 1));
-                }
-
-                if(rightCrownStealers.Count > 0) {
-                    poiList.Add(new MarkInfo(rightCrownStealers[0], StyleConfigs.Boss.Color, StyleConfigs.Boss.Sign, ConfigStrings.Boss, textLines: [ rightCrownStealers.Count + "" ], image: LoadTextures.EnemyCrownStealerTexture, rowNum: 1));
-                }
-            }
-
-            //Chests
-            foreach (var obj in gameLayer.GetComponentsInChildren<Chest>())
-            {
-                if (obj.coins == 0) continue;
-
-                if (obj.isGems)
-                    poiList.Add(new MarkInfo(obj.transform.position.x, StyleConfigs.GemChest.Color, StyleConfigs.GemChest.Sign, "", textLines: [ obj.coins + "" ], image: LoadTextures.ChestGemTexture, rowNum: 1));
-                else
-                    poiList.Add(new MarkInfo(obj.transform.position.x, StyleConfigs.Chest.Color, StyleConfigs.Chest.Sign, "", textLines: [ obj.coins + "" ], image: LoadTextures.ChestTexture, rowNum: 1));
-            }
-
-            //Payable gem chest next to boat
-            var payableGemChest = GameExtensions.GetPayableOfType<PayableGemChest>();
-            if(payableGemChest != null) {
-                var gemsCount = payableGemChest.infiniteGems ? payableGemChest.GetFieldOrPropertyValue<PayableGemGuard>("guardRef").price : payableGemChest.gemsStored;
-                poiList.Add(new MarkInfo(payableGemChest.transform.position.x, StyleConfigs.GemMerchant.Color, StyleConfigs.GemMerchant.Sign, "", textLines: [ gemsCount + "" ], image: LoadTextures.ChestGemPayableTexture, rowNum: 1));
-            }
-
-            //Archer towers
-            foreach(var obj in GameExtensions.FindObjectsWithTagOfType<Tower>(Tags.Tower)) {
-                if(obj.level > 0) {
-                    poiList.Add(new MarkInfo(obj.transform.position.x, StyleConfigs.Deer.Color, StyleConfigs.Deer.Sign, "", textLines: [ obj.level + "" ], image: LoadTextures.ArcherTowerTexture));
-                } else {
-                    poiList.Add(new MarkInfo(obj.transform.position.x, StyleConfigs.Deer.Color, StyleConfigs.Deer.Sign, "", image: LoadTextures.ArcherTowerUnbuiltTexture));
-                }
-            }
-
-            //Active walls
-            foreach (var obj in kingdom.GetFieldOrPropertyValue<HashSet<Wall>>("_walls"))
-            {
-                poiList.Add(new MarkInfo(obj.transform.position.x, StyleConfigs.Wall.Color, StyleConfigs.Wall.Sign, "", textLines: [ obj.level + "" ], image: LoadTextures.WallTexture));
-                if (kingdom.GetBorderSideForPosition(obj.transform.position.x) == Side.Left)
-                    leftWalls.Add(new WallPoint(obj.transform.position, StyleConfigs.WallLine.Color));
-                else
-                    rightWalls.Add(new WallPoint(obj.transform.position, StyleConfigs.WallLine.Color));
-            }
-
-            //Broken walls
-            foreach(var obj in GameObject.FindGameObjectsWithTag(Tags.WallWreck)) {
-                poiList.Add(new MarkInfo(obj.transform.position.x, StyleConfigs.Wall.Wrecked.Color, StyleConfigs.Wall.Sign, "", image: LoadTextures.WallUnbuiltTexture));
-                if(kingdom.GetBorderSideForPosition(obj.transform.position.x) == Side.Left)
-                    leftWalls.Add(new WallPoint(obj.transform.position, StyleConfigs.WallLine.Wrecked.Color));
-                else
-                    rightWalls.Add(new WallPoint(obj.transform.position, StyleConfigs.WallLine.Wrecked.Color));
-            }
-
-            //Unbuilt walls
-            foreach(var obj in GameObject.FindGameObjectsWithTag(Tags.WallFoundation)) {
-                poiList.Add(new MarkInfo(obj.transform.position.x, StyleConfigs.WallFoundation.Color, StyleConfigs.WallFoundation.Sign, "", image: LoadTextures.WallUnbuiltTexture));
-            }
-
-            //Steeds
-            var steedNames = new System.Collections.Generic.Dictionary<Steed.SteedType, string> {
-                { Steed.SteedType.Bear,                  ConfigStrings.Bear },
-                { Steed.SteedType.P1Griffin,             ConfigStrings.Griffin },
-                { Steed.SteedType.Lizard,                ConfigStrings.Lizard },
-                { Steed.SteedType.Reindeer,              ConfigStrings.Reindeer },
-                { Steed.SteedType.Spookyhorse,           ConfigStrings.Spookyhorse },
-                { Steed.SteedType.Stag,                  ConfigStrings.Stag },
-                { Steed.SteedType.Unicorn,               ConfigStrings.Unicorn },
-                { Steed.SteedType.P1Warhorse,            ConfigStrings.Warhorse },
-                { Steed.SteedType.P1Default,             ConfigStrings.DefaultSteed },
-                { Steed.SteedType.P2Default,             ConfigStrings.DefaultSteed },
-                { Steed.SteedType.HorseStamina,          ConfigStrings.HorseStamina },
-                { Steed.SteedType.HorseBurst,            ConfigStrings.HorseBurst },
-                { Steed.SteedType.HorseFast,             ConfigStrings.HorseFast },
-                { Steed.SteedType.P1Wolf,                ConfigStrings.Wolf },
-                { Steed.SteedType.Trap,                  ConfigStrings.Trap },
-                { Steed.SteedType.Barrier,               ConfigStrings.Barrier },
-                { Steed.SteedType.Bloodstained,          ConfigStrings.Bloodstained },
-                { Steed.SteedType.P2Wolf,                ConfigStrings.Wolf },
-                { Steed.SteedType.P2Griffin,             ConfigStrings.Griffin },
-                { Steed.SteedType.P2Warhorse,            ConfigStrings.Warhorse },
-                { Steed.SteedType.P2Stag,                ConfigStrings.Stag },
-                { Steed.SteedType.Gullinbursti,          ConfigStrings.Gullinbursti },
-                { Steed.SteedType.Sleipnir,              ConfigStrings.Sleipnir },
-                { Steed.SteedType.Reindeer_Norselands,   ConfigStrings.Reindeer },
-                { Steed.SteedType.CatCart,               ConfigStrings.CatCart },
-                { Steed.SteedType.Kelpie,                ConfigStrings.Kelpie },
-                { Steed.SteedType.DayNight,              ConfigStrings.DayNight },
-                { Steed.SteedType.P2Kelpie,              ConfigStrings.Kelpie },
-                { Steed.SteedType.P2Reindeer_Norselands, ConfigStrings.Reindeer },
-            };
-
-            //Farm houses
-            var farmHouses = kingdom.GetFarmHouses();
-            foreach(var obj in farmHouses) {
-                if(obj.isStable) {
-                    string[] stableSteedNames = new string[obj.stabledSteeds.Count];
-
-                    for(int i = 0; i < obj.stabledSteeds.Count; i++) {
-                        stableSteedNames[i] = steedNames[obj.stabledSteeds[i].steedType];
-                    }
-
-                    stableSteedNames = [.. stableSteedNames.OrderBy(s => s.Length)];
-
-                    poiList.Add(new MarkInfo(obj.transform.position.x, StyleConfigs.Farmhouse.Color, StyleConfigs.Farmhouse.Sign, "", textLines: stableSteedNames, image: LoadTextures.StableTexture));
-                } else {
-                    poiList.Add(new MarkInfo(obj.transform.position.x, StyleConfigs.Farmhouse.Color, StyleConfigs.Farmhouse.Sign, "", textLines: [ obj.level + "" ], image: LoadTextures.FarmHouseTexture));
-                }
-            }
-
-            //Rivers (unbuilt farm houses)
-            foreach(var river in gameLayer.GetComponentsInChildren<River>()) {
-                bool isFarmHouse = false;
-
-                foreach(var farmHouse in farmHouses) {
-                    if(Math.Abs(farmHouse.transform.position.x - river.transform.position.x) <= 1) {
-                        isFarmHouse = true;
-                        break;
-                    }
-                }
-
-                if(isFarmHouse)
-                    continue;
-
-                poiList.Add(new MarkInfo(river.transform.position.x, StyleConfigs.River.Color, StyleConfigs.River.Sign, "", image: LoadTextures.RiverTexture));
+                poiList.Add(new MarkInfo(lighthouse.transform.position.x, StyleConfigs.ShopForge.Color, StyleConfigs.ShopForge.Sign, "", textLines: [lighthouseLevels[lighthouse.techAge] + "" ], image: LoadTextures.LighthouseTexture));
             }
 
             foreach (var obj in Managers.Inst.world.GetFieldOrPropertyValue<List<PayableBush>>("_berryBushes"))
@@ -730,13 +659,6 @@ namespace KingdomMod
                 }
             }
 
-            //Spawned steeds
-            /*foreach (var obj in kingdom.spawnedSteeds)
-            {
-                if (obj.CurrentMode != Steed.Mode.Player)
-                    poiList.Add(new MarkInfo(obj.transform.position.x, StyleConfigs.Steeds.Color, StyleConfigs.Steeds.Sign, steedNames[obj.steedType], obj.price));
-            }*/
-
             //Unspawned steeds
             foreach (var obj in kingdom.steedSpawns)
             {
@@ -747,35 +669,29 @@ namespace KingdomMod
                 }
 
                 if (!obj.GetPropertyValue<bool>("_hasSpawned"))
-                    poiList.Add(new MarkInfo(obj.transform.position.x, StyleConfigs.SteedSpawns.Color, StyleConfigs.SteedSpawns.Sign, info, obj.price, textLines: [ info ], image: LoadTextures.SteedTexture));
+                    poiList.Add(new MarkInfo(obj.transform.position.x, StyleConfigs.SteedSpawns.Color, StyleConfigs.SteedSpawns.Sign, info, textLines: [info], image: LoadTextures.SteedTexture));
             }
 
             //Hermits
             foreach (var obj in GameExtensions.GetPayablesOfType<Cabin>())
             {
                 if (obj.GetPropertyValue<bool>("canPay"))
-                    poiList.Add(new MarkInfo(obj.transform.position.x, StyleConfigs.HermitCabins.Color, StyleConfigs.HermitCabins.Sign, "", obj.price, textLines: [ hermitNames[obj.hermitType] ], image: LoadTextures.HermitTexture));
+                    poiList.Add(new MarkInfo(obj.transform.position.x, StyleConfigs.HermitCabins.Color, StyleConfigs.HermitCabins.Sign, "", textLines: [hermitNames[obj.hermitType]], image: LoadTextures.HermitTexture));
             }
 
-            foreach(var obj in kingdom.hermits) {
-                if(obj._playerPassengerTo == null) {
-                    poiList.Add(new MarkInfo(obj.transform.position.x, StyleConfigs.HermitCabins.Color, StyleConfigs.HermitCabins.Sign, "", obj.price, textLines: [hermitNames[obj.hermitType]], image: LoadTextures.HermitTexture, rowNum: 1));
+            foreach (var obj in kingdom.hermits)
+            {
+                if (obj._playerPassengerTo == null)
+                {
+                    poiList.Add(new MarkInfo(obj.transform.position.x, StyleConfigs.HermitCabins.Color, StyleConfigs.HermitCabins.Sign, "", textLines: [hermitNames[obj.hermitType]], image: LoadTextures.HermitTexture, rowNum: 1));
                 }
             }
 
             //Statues
-            var statueNames = new System.Collections.Generic.Dictionary<Statue.Deity, string> {
-                { Statue.Deity.Archer,  ConfigStrings.StatueArcher },
-                { Statue.Deity.Worker,  ConfigStrings.StatueWorker },
-                { Statue.Deity.Knight,  ConfigStrings.StatueKnight },
-                { Statue.Deity.Farmer,  ConfigStrings.StatueFarmer },
-                { Statue.Deity.Time,    ConfigStrings.StatueTime },
-            };
-
             foreach (var obj in GameExtensions.GetPayablesOfType<Statue>())
             {
                 if (obj.deityStatus != Statue.DeityStatus.Activated)
-                    poiList.Add(new MarkInfo(obj.transform.position.x, StyleConfigs.Statues.Color, StyleConfigs.Statues.Sign, statueNames[obj.deity], obj.price, textLines: [ statueNames[obj.deity] ], image: LoadTextures.StatueTexture));
+                    poiList.Add(new MarkInfo(obj.transform.position.x, StyleConfigs.Statues.Color, StyleConfigs.Statues.Sign, statueNames[obj.deity], obj.price, textLines: [statueNames[obj.deity]], image: LoadTextures.StatueTexture));
             }
 
             var timeStatue = kingdom.timeStatue;
@@ -793,19 +709,146 @@ namespace KingdomMod
                     poiList.Add(new MarkInfo(wreck.transform.position.x, StyleConfigs.Boat.Wrecked.Color, StyleConfigs.Boat.Sign, "", image: LoadTextures.WreckTexture, rowNum: 1));
             }
 
-            var playerModelName = new System.Collections.Generic.Dictionary<Player.Model, string> {
-                { Player.Model.None,        "" },
-                { Player.Model.King,        ConfigStrings.King },
-                { Player.Model.Queen,       ConfigStrings.Queen },
-                { Player.Model.Prince,      ConfigStrings.Prince },
-                { Player.Model.Princess,    ConfigStrings.Princess },
-                { Player.Model.Hooded,      ConfigStrings.Hooded },
-                { Player.Model.Zangetsu,    ConfigStrings.Zangetsu },
-                { Player.Model.Alfred,      ConfigStrings.Alfred },
-                { Player.Model.Gebel,       ConfigStrings.Gebel },
-                { Player.Model.Miriam,      ConfigStrings.Miriam },
-                { Player.Model.Total,       "" },
-            };
+            //Teleporters
+            System.Collections.Generic.List<Texture2D> availablePortalTextures = [
+                LoadTextures.Portal_GTexture,
+                LoadTextures.Portal_PTexture,
+                LoadTextures.Portal_OTexture,
+                LoadTextures.Portal_MTexture,
+                LoadTextures.Portal_YTexture,
+                LoadTextures.Portal_BTexture,
+            ];
+
+            System.Collections.Generic.Dictionary<int, Texture2D> assignedPortalTextures = [];
+
+            foreach (var obj in GameExtensions.GetPayablesOfType<PayableTeleporter>())
+            {
+                if (assignedPortalTextures.ContainsKey(obj.linkedTo.GetHashCode()))
+                {
+                    poiList.Add(new MarkInfo(obj.transform.position.x, StyleConfigs.ShopForge.Color, StyleConfigs.ShopForge.Sign, "", image: assignedPortalTextures[obj.linkedTo.GetHashCode()], rowNum: 1));
+                    continue;
+                }
+
+                if (availablePortalTextures.Count == 0)
+                {
+                    poiList.Add(new MarkInfo(obj.transform.position.x, StyleConfigs.ShopForge.Color, StyleConfigs.ShopForge.Sign, "", image: LoadTextures.PortalTexture, rowNum: 1));
+                    continue;
+                }
+
+                assignedPortalTextures.Add(obj.GetHashCode(), availablePortalTextures[0]);
+                availablePortalTextures.RemoveAt(0);
+
+                poiList.Add(new MarkInfo(obj.transform.position.x, StyleConfigs.ShopForge.Color, StyleConfigs.ShopForge.Sign, "", image: assignedPortalTextures[obj.GetHashCode()], rowNum: 1));
+            }
+
+            //Enemies and bosses
+            var enemies = Managers.Inst.enemies.GetFieldOrPropertyValue<HashSet<Enemy>>("_enemies");
+            if (enemies != null && enemies.Count > 0)
+            {
+                var leftEnemies = new System.Collections.Generic.List<float>();
+                var leftBosses = new System.Collections.Generic.List<float>();
+                var leftBossesWithCrownStealers = new System.Collections.Generic.List<float>();
+                var leftSquids = new System.Collections.Generic.List<float>();
+                var leftCrownStealers = new System.Collections.Generic.List<float>();
+
+                var rightEnemies = new System.Collections.Generic.List<float>();
+                var rightBosses = new System.Collections.Generic.List<float>();
+                var rightBossesWithCrownStealers = new System.Collections.Generic.List<float>();
+                var rightSquids = new System.Collections.Generic.List<float>();
+                var rightCrownStealers = new System.Collections.Generic.List<float>();
+
+                foreach (var enemy in enemies)
+                {
+                    if (enemy == null) continue;
+                    var damageable = enemy.GetComponent<Damageable>();
+                    if (damageable != null && damageable.isDead)
+                        continue;
+
+                    var bossComponent = enemy.GetComponent<Boss>();
+
+                    var enemyX = enemy.transform.position.x;
+                    if (kingdom.GetBorderSideForPosition(enemyX) == Side.Left) {
+                        if(enemy.GetComponent<Squid>() != null)
+                            leftSquids.Add(enemyX);
+                        else if (bossComponent != null && bossComponent.crownStealerPrefab != null && bossComponent.crownStealerPrefab.TryGetComponent(out Damageable bossCrownStealerDamageable) && !bossCrownStealerDamageable.isDead)
+                            leftBossesWithCrownStealers.Add(enemyX);
+                        else if(enemy.GetComponent<CrownStealer>() != null)
+                            leftCrownStealers.Add(enemyX);
+                        else if(bossComponent != null)
+                            leftBosses.Add(enemyX);
+                        else
+                            leftEnemies.Add(enemyX);
+                    } else {
+                        if(enemy.GetComponent<Squid>() != null)
+                            rightSquids.Add(enemyX);
+                        else if(bossComponent != null && bossComponent.crownStealerPrefab != null && bossComponent.crownStealerPrefab.TryGetComponent(out Damageable bossCrownStealerDamageable) && !bossCrownStealerDamageable.isDead)
+                            rightBossesWithCrownStealers.Add(enemyX);
+                        else if(enemy.GetComponent<CrownStealer>() != null)
+                            rightCrownStealers.Add(enemyX);
+                        else if(bossComponent != null)
+                            rightBosses.Add(enemyX);
+                        else
+                            rightEnemies.Add(enemyX);
+                    }
+                }
+
+                leftEnemies.Sort();
+                leftEnemies.Reverse();
+                leftBosses.Sort();
+                leftBosses.Reverse();
+                leftBossesWithCrownStealers.Sort();
+                leftBossesWithCrownStealers.Reverse();
+                leftSquids.Sort();
+                leftSquids.Reverse();
+                leftCrownStealers.Sort();
+                leftCrownStealers.Reverse();
+
+                rightEnemies.Sort();
+                rightBosses.Sort();
+                rightBossesWithCrownStealers.Sort();
+                rightSquids.Sort();
+                rightCrownStealers.Sort();
+
+                if(leftEnemies.Count > 0) {
+                    poiList.Add(new MarkInfo(leftEnemies[0], StyleConfigs.Enemy.Color, StyleConfigs.Enemy.Sign, ConfigStrings.Enemy, textLines: [ leftEnemies.Count + "" ], image: LoadTextures.EnemyTexture, rowNum: 1, alwaysVisible: true));
+                }
+
+                if(leftBosses.Count > 0) {
+                    poiList.Add(new MarkInfo(leftBosses[0], StyleConfigs.Boss.Color, StyleConfigs.Boss.Sign, ConfigStrings.Boss, textLines: [ leftBosses.Count + "" ], image: LoadTextures.EnemyBossTexture, rowNum: 1, alwaysVisible: true));
+                }
+
+                if(leftBossesWithCrownStealers.Count > 0) {
+                    poiList.Add(new MarkInfo(leftBossesWithCrownStealers[0], StyleConfigs.Boss.Color, StyleConfigs.Boss.Sign, ConfigStrings.Boss, textLines: [ leftBossesWithCrownStealers.Count + "" ], image: LoadTextures.EnemyBossWithCrownStealerTexture, rowNum: 1, alwaysVisible: true));
+                }
+
+                if(leftSquids.Count > 0) {
+                    poiList.Add(new MarkInfo(leftSquids[0], StyleConfigs.Boss.Color, StyleConfigs.Boss.Sign, ConfigStrings.Boss, textLines: [ leftSquids.Count + "" ], image: LoadTextures.EnemySquidTexture, rowNum: 1, alwaysVisible: true));
+                }
+
+                if(leftCrownStealers.Count > 0) {
+                    poiList.Add(new MarkInfo(leftCrownStealers[0], StyleConfigs.Boss.Color, StyleConfigs.Boss.Sign, ConfigStrings.Boss, textLines: [ leftCrownStealers.Count + "" ], image: LoadTextures.EnemyCrownStealerTexture, rowNum: 1, alwaysVisible: true));
+                }
+
+                if(rightEnemies.Count > 0) {
+                    poiList.Add(new MarkInfo(rightEnemies[0], StyleConfigs.Enemy.Color, StyleConfigs.Enemy.Sign, ConfigStrings.Enemy, textLines: [ rightEnemies.Count + "" ], image: LoadTextures.EnemyTexture, rowNum: 1, flipImage: true, alwaysVisible: true));
+                }
+
+                if(rightBosses.Count > 0) {
+                    poiList.Add(new MarkInfo(rightBosses[0], StyleConfigs.Boss.Color, StyleConfigs.Boss.Sign, ConfigStrings.Boss, textLines: [ rightBosses.Count + "" ], image: LoadTextures.EnemyBossTexture, rowNum: 1, flipImage: true, alwaysVisible: true));
+                }
+
+                if(rightBossesWithCrownStealers.Count > 0) {
+                    poiList.Add(new MarkInfo(rightBossesWithCrownStealers[0], StyleConfigs.Boss.Color, StyleConfigs.Boss.Sign, ConfigStrings.Boss, textLines: [rightBossesWithCrownStealers.Count + "" ], image: LoadTextures.EnemyBossWithCrownStealerTexture, rowNum: 1, flipImage: true, alwaysVisible: true));
+                }
+
+                if(rightSquids.Count > 0) {
+                    poiList.Add(new MarkInfo(rightSquids[0], StyleConfigs.Boss.Color, StyleConfigs.Boss.Sign, ConfigStrings.Boss, textLines: [ rightSquids.Count + "" ], image: LoadTextures.EnemySquidTexture, rowNum: 1, flipImage: true, alwaysVisible: true));
+                }
+
+                if(rightCrownStealers.Count > 0) {
+                    poiList.Add(new MarkInfo(rightCrownStealers[0], StyleConfigs.Boss.Color, StyleConfigs.Boss.Sign, ConfigStrings.Boss, textLines: [ rightCrownStealers.Count + "" ], image: LoadTextures.EnemyCrownStealerTexture, rowNum: 1, flipImage: true, alwaysVisible: true));
+                }
+            }
 
             foreach (var obj in payables.
 #if IL2CPP
@@ -850,7 +893,7 @@ namespace KingdomMod
                         };
                         if (color != StyleConfigs.RulerSpawns.Unlocked.Color)
                         {
-                            poiList.Add(new MarkInfo(go.transform.position.x, color, StyleConfigs.RulerSpawns.Sign, playerModelName[unlockNewRulerStatue.rulerToUnlock], obj.price));
+                            poiList.Add(new MarkInfo(go.transform.position.x, color, StyleConfigs.RulerSpawns.Sign, playerModelNames[unlockNewRulerStatue.rulerToUnlock], obj.price));
                         }
                     }
                 }
@@ -874,25 +917,6 @@ namespace KingdomMod
                 {
                     var color = helPuzzleController.State == 0 ? StyleConfigs.HelPuzzleStatue.Locked.Color : StyleConfigs.HelPuzzleStatue.Unlocked.Color;
                     poiList.Add(new MarkInfo(helPuzzleController.transform.position.x, color, StyleConfigs.HelPuzzleStatue.Sign, ConfigStrings.HelPuzzleStatue));
-                }
-            }
-
-            foreach (var blocker in payables.GetFieldOrPropertyValue<List<PayableBlocker>>("_allBlockers"))
-            {
-                if (blocker == null) continue;
-                var scaffolding = blocker.GetComponent<Scaffolding>();
-                if (scaffolding == null) continue;
-                var go = scaffolding.building;
-                if (go == null) continue;
-
-                var wall = go.GetComponent<Wall>();
-                if (wall)
-                {
-                    poiList.Add(new MarkInfo(go.transform.position.x, StyleConfigs.Wall.Building.Color, StyleConfigs.Wall.Sign, ""));
-                    if (kingdom.GetBorderSideForPosition(go.transform.position.x) == Side.Left)
-                        leftWalls.Add(new WallPoint(go.transform.position, StyleConfigs.WallLine.Building.Color));
-                    else
-                        rightWalls.Add(new WallPoint(go.transform.position, StyleConfigs.WallLine.Building.Color));
                 }
             }
 
@@ -948,6 +972,7 @@ namespace KingdomMod
             // Make wall lines
 
             var lineList = new System.Collections.Generic.List<LineInfo>();
+
             if (leftWalls.Count > 1)
             {
                 leftWalls.Sort((a, b) => b.Pos.x.CompareTo(a.Pos.x));
@@ -1006,7 +1031,7 @@ namespace KingdomMod
             return false;
         }
 
-        private void DrawMinimap(int playerId) {
+        private void DrawMinimap() {
             if(minimapMarkList.Count == 0)
                 return;
 
@@ -1057,13 +1082,10 @@ namespace KingdomMod
             }
 
             foreach(var row in rowList) {
-                DrawMinimapRow(playerId, row);
+                DrawMinimapRow(row);
             }
 
             foreach (var markInfo in minimapMarkList) {
-                if (!markInfo.Visible)
-                    continue;
-
                 if(markInfo.Image != null) {
                     continue;
                 }
@@ -1095,11 +1117,11 @@ namespace KingdomMod
             }
         }
 
-        private void DrawMinimapRow(int playerId, MinimapRowInfo row) {
+        private void DrawMinimapRow(MinimapRowInfo row) {
             if(row.HasCastle) {
                 DrawMinimapRowWithCastle(row);
             } else {
-                DrawMinimapRowWithoutCastle(playerId, row);
+                DrawMinimapRowWithoutCastle(row);
             }
         }
 
@@ -1127,7 +1149,7 @@ namespace KingdomMod
             DrawMinimapImagesRight(imageMarkListRight, occupiedPixelsRight, row.RowTop);
         }
 
-        private void DrawMinimapRowWithoutCastle(int playerId, MinimapRowInfo row) {
+        private void DrawMinimapRowWithoutCastle(MinimapRowInfo row) {
             IOrderedEnumerable<MarkInfo> imageMarkListRight = row.RowMarkList.OrderBy(mi => mi.Pos);
 
             DrawMinimapImagesRight(imageMarkListRight, 0, row.RowTop);
@@ -1135,6 +1157,8 @@ namespace KingdomMod
 
         private void DrawMinimapImagesLeft(IOrderedEnumerable<MarkInfo> imageMarkListLeft, float occupiedPixelsLeft, float imageTop) {
             float markInfoCorrectedPos;
+            int imageWidth;
+            float markInfoTextPos;
 
             foreach(MarkInfo markInfo in imageMarkListLeft) {
                 if(!markInfo.Visible)
@@ -1148,27 +1172,29 @@ namespace KingdomMod
                     occupiedPixelsLeft = markInfo.Pos - (markInfo.Image.width / 2) - imageHMargin;
                 }
 
-                int imageWidth = markInfo.Image.width;
+                imageWidth = markInfo.Image.width;
 
-                if(markInfo.FlipImage) {
+                markInfoTextPos = markInfoCorrectedPos;
+
+                if (markInfo.FlipImage) {
                     markInfoCorrectedPos += imageWidth;
                     imageWidth *= -1;
                 }
 
                 GUI.DrawTexture(new Rect(markInfoCorrectedPos, imageTop, imageWidth, markInfo.Image.height), markInfo.Image);
 
-                if(markInfo.TextLines.Length > 0) {
-                    for(int i = 0; i < markInfo.TextLines.Length; i++) {
-                        GUI.Label(new Rect(markInfoCorrectedPos + (markInfo.Image.width / 2), imageTop + markInfo.Image.height + (textHeight * i), 0, textHeight), markInfo.TextLines[i], guiStyle);
-                    }
+                for(int i = 0; i < markInfo.TextLines.Length; i++) {
+                    GUI.Label(new Rect(markInfoTextPos + (markInfo.Image.width / 2), imageTop + markInfo.Image.height + (textHeight * i), 0, textHeight), markInfo.TextLines[i], guiStyle);
                 }
             }
         }
 
         private void DrawMinimapImagesRight(IOrderedEnumerable<MarkInfo> imageMarkListRight, float occupiedPixelsRight, float imageTop) {
             float markInfoCorrectedPos;
+            int imageWidth;
+            float markInfoTextPos;
 
-            foreach(MarkInfo markInfo in imageMarkListRight) {
+            foreach (MarkInfo markInfo in imageMarkListRight) {
                 if(!markInfo.Visible)
                     continue;
 
@@ -1180,19 +1206,19 @@ namespace KingdomMod
                     occupiedPixelsRight = markInfo.Pos + (markInfo.Image.width / 2) + imageHMargin;
                 }
 
-                int imageWidth = markInfo.Image.width;
+                imageWidth = markInfo.Image.width;
 
-                if(markInfo.FlipImage) {
+                markInfoTextPos = markInfoCorrectedPos;
+
+                if (markInfo.FlipImage) {
                     markInfoCorrectedPos += imageWidth;
                     imageWidth *= -1;
                 }
 
                 GUI.DrawTexture(new Rect(markInfoCorrectedPos, imageTop, imageWidth, markInfo.Image.height), markInfo.Image);
 
-                if(markInfo.TextLines.Length > 0) {
-                    for(int i = 0; i < markInfo.TextLines.Length; i++) {
-                        GUI.Label(new Rect(markInfoCorrectedPos + (markInfo.Image.width / 2), imageTop + markInfo.Image.height + (textHeight * i), 0, textHeight), markInfo.TextLines[i], guiStyle);
-                    }
+                for(int i = 0; i < markInfo.TextLines.Length; i++) {
+                    GUI.Label(new Rect(markInfoTextPos + (markInfo.Image.width / 2), imageTop + markInfo.Image.height + (textHeight * i), 0, textHeight), markInfo.TextLines[i], guiStyle);
                 }
             }
         }
@@ -1269,7 +1295,7 @@ namespace KingdomMod
             statsInfo.MaxFarmlands = maxFarmlands;
         }
 
-        private void DrawStatsInfo(int playerId)
+        private void DrawStatsInfo()
         {
             guiStyle.normal.textColor = StyleConfigs.StatsInfo.Color;
             guiStyle.alignment = TextAnchor.UpperLeft;
